@@ -23,8 +23,12 @@ def reward(r_p, r_v, r_C, p, p_hat, v, v_hat, C, next_steps):
   v_hat = v_hat[0:next_steps-1]
 
   R_p = r_p/(np.norm(p-p_hat)**2) #This needs to be bounded per the feedback on our progress report
+  R_p = np.max(R_p, 100) #Bound to 100 (should we make this a hyperparameter?)
+
   R_v = r_v/(np.norm(v-v_hat)**2) #This needs to be bounded per the feedback on our progress report
-  R_C = r_C*np.sum(C)
+  R_v = np.max(R_v, 100) #Bound to 100 (should we make this a hyperparameter?)
+
+  R_C = -r_C*np.sum(C)
 
   R = R_p + R_v + R_C
   
