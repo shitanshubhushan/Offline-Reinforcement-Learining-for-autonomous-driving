@@ -51,4 +51,10 @@ def MDP_tuple(ego_id, interactive_agents, current_time, uniqueTracks):
     for agent_id in interactive_agents_next:
         s_next += list(uniqueTracks[agent_id].motionState[next_time].values())
 
-    return (s, a, r, s_next)
+    ### the last time frame
+    if next_time == 4000:
+        the_last_episode = True
+    else:
+        the_last_episode = False
+
+    return (s, a, r, s_next, the_last_episode)
