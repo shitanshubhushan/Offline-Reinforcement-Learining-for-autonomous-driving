@@ -12,12 +12,17 @@ class motionState:
         self.vx = None
         self.vy = None
         self.psi_rad = None
+        self.length = None
+        self.width = None
+        self.unique_id = None
+        self.agent_type = None
 
     def __str__(self):
         return "motionState: " + str(self.__dict__)
 
     def get_dict_type_data(self):
-        return {'agent_type':self.agent_type, 'x':self.x, 'y':self.y, 'vx':self.vx, 'vy':self.vy, 'psi_rad':self.psi_rad}
+        return {'agent_type':self.agent_type, 'x':self.x, 'y':self.y, 'vx':self.vx, 'vy':self.vy,'psi_rad':self.psi_rad,
+                'length': self.length, 'width':self.width, 'unique_id': self.unique_id, 'agent_type': self.agent_type}
 
 # each unique_id (= case_id * 100 + track_id) represents either a car, pedestrian, or bike
 class uniqueTrack:
@@ -65,7 +70,11 @@ def read_uniqueTracks(df):
             'y': row['y'], 
             'vx': row['vx'], 
             'vy': row['vy'], 
-            'psi_rad': row['psi_rad']
+            'psi_rad': row['psi_rad'],
+            'length': row['length'],
+            'width':row['width'],
+            'unique_id': row['unique_id'],
+            'agent_type': row['agent_type']
         }
 
         track.motionState[timestamp] = motion_state

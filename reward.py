@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-def check_collision(ego_id, interactive_agents, current_time, uniqueTracks):
+def check_collision(curr_egoMotionState, interactive_egoMotionStates):
     """
     Check for collisions between the ego agent and interactive agents at the given time.
     input:
@@ -16,31 +16,26 @@ def check_collision(ego_id, interactive_agents, current_time, uniqueTracks):
         bool: True if a collision is detected, False otherwise.
     """
     # ego agent's state and features
-    ego_track = uniqueTracks[ego_id]
-    ego_state = ego_track.motionState[current_time]
-    ego_x = ego_state['x']
-    ego_y = ego_state['y']
-    ego_psi = ego_state['psi_rad']
-    ego_length = ego_track.length
-    ego_width = ego_track.width
+    ego_x = curr_egoMotionState['x']
+    ego_y = curr_egoMotionState['y']
+    ego_psi = curr_egoMotionState['psi_rad']
+    ego_length = curr_egoMotionState['length']
+    ego_width = curr_egoMotionState['width']
     ego_half_length = ego_length / 2
     ego_half_width = ego_width / 2
 
     # Check for collision with each interactive agent
-    for interactive_id in interactive_agents:
-        interactive_track = uniqueTracks[interactive_id]
-        if interactive_id != 0 and interactive_id in uniqueTracks and current_time in interactive_track.motionState:
-            interactive_state = interactive_track.motionState[current_time]
+    for interactive_state in interactive_egoMotionStates:
+        interactive_id = interactive_state['unique_id']
+        if interactive_id != 0:
             interactive_x = interactive_state['x']
             interactive_y = interactive_state['y']
             interactive_psi = interactive_state['psi_rad']
-            interactive_length = interactive_track.length
-            interactive_width = interactive_track.width
-            interactive_type = interactive_track.agent_type
+            interactive_length = interactive_state['length']
+            interactive_width = interactive_state['width']
+            interactive_type = interactive_state['agent_type']
             
             if interactive_type == 1:  # Car
-                interactive_length = interactive_track.length
-                interactive_width = interactive_track.width
                 return car_collision(ego_x, ego_y, ego_length, ego_width, ego_psi, interactive_x, interactive_y,
                                      interactive_length, interactive_width, interactive_psi)
             else:
@@ -127,7 +122,7 @@ def car_collision(ego_x, ego_y, ego_length, ego_width, ego_psi, interactive_x, i
     return False
 
 
-def get_reward(ego_id, interactive_agents, current_time, uniqueTracks, v_max):
+def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max):
     """
     reward function
     input:
@@ -141,17 +136,19 @@ def get_reward(ego_id, interactive_agents, current_time, uniqueTracks, v_max):
         total reward
     """
 
+    # curr_egoMotionState = uniqueTracks[ego_id].motionState[current_time]
+    # closest_egoMotionState = uniqueTracks[interactive_agents[0]].motionState[current_time]
     # velocity reward 
-    vx = uniqueTracks[ego_id].motionState[current_time]['vx']
-    vy = uniqueTracks[ego_id].motionState[current_time]['vy']
+    vx = curr_egoMotionState['vx']
+    vy = curr_egoMotionState['vy']
     rv = 0.5 * ((vx ** 2 + vy ** 2) ** 0.5) / v_max
 
     # position reward
-    x = uniqueTracks[ego_id].motionState[current_time]['x']
-    y = uniqueTracks[ego_id].motionState[current_time]['y']
+    x = curr_egoMotionState['x']
+    y = curr_egoMotionState['y']
 
-    x_closest = uniqueTracks[interactive_agents[0]].motionState[current_time]['x']
-    y_closest = uniqueTracks[interactive_agents[0]].motionState[current_time]['y']
+    x_closest = interactive_egoMotionStates[0]['x']
+    y_closest = interactive_egoMotionStates[0]['y']
 
 #     direction_ego = np.arctan(vy/vx)
     distance_closest = np.sqrt((x_closest-x)**2 + (y_closest-y)**2) #b
@@ -170,7 +167,7 @@ def get_reward(ego_id, interactive_agents, current_time, uniqueTracks, v_max):
     rp = distance_closest * angle_factor
 
     # collision reward
-    rc = -100 if check_collision(ego_id, interactive_agents, current_time, uniqueTracks) else 0
+    rc = -100 if check_collision(curr_egoMotionState, interactive_egoMotionStates) else 0
 
     return rv + rc + rp
 

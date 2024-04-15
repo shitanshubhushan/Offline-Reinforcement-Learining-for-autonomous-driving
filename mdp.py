@@ -87,7 +87,11 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
     # r  = 0.5 * ((vx ** 2 + vy ** 2) ** 0.5) / v_max
     # if collision.check_collision(ego_id, interactive_agents, current_time, uniqueTracks):
     #    r -= 100
-    r = reward.get_reward(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
+    
+    interactive_egoMotionStates = []
+    for i in range(len(interactive_agents)):
+        interactive_egoMotionStates.append(uniqueTracks[interactive_agents[i]].motionState[current_time])
+    r = reward.get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max)
 
     ### 4. next state
     # repeat step 1. to get next state
@@ -97,9 +101,9 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
         interactive_agents_next.append(0)
     for agent_id in interactive_agents_next:
         if agent_id != 0:
-            s += list(uniqueTracks[agent_id].motionState[next_time].values())
+            s_next += list(uniqueTracks[agent_id].motionState[next_time].values())
         else:
-            s += [0, 0, 0, 0, 0, 0]
+            s_next += [0, 0, 0, 0, 0, 0]
 
     ### the last episode
     # 1 the last time frame
