@@ -164,7 +164,10 @@ def get_reward(ego_id, interactive_agents, current_time, uniqueTracks, v_max):
 
     alpha = np.arccos((distance_next**2 + distance_closest**2 - distance_next_closest**2)/(2*distance_next*distance_closest))
 
-    rp = 0.5 * distance_closest * np.cos(alpha)**2
+    angle_factor = 0
+    if alpha>-30 and alpha<30:
+        angle_factor = -1
+    rp = distance_closest * angle_factor
 
     # collision reward
     rc = -100 if check_collision(ego_id, interactive_agents, current_time, uniqueTracks) else 0
