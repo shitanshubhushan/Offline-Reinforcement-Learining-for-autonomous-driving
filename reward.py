@@ -1,3 +1,4 @@
+from cmath import sqrt
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -139,20 +140,36 @@ def get_reward(ego_id, interactive_agents, current_time, uniqueTracks, v_max):
     output:
         total reward
     """
-    # position reward
-    x = uniqueTracks[ego_id].motionState[current_time]['x']
-    y = uniqueTracks[ego_id].motionState[current_time]['y']
-    rp = 0.5
 
     # velocity reward 
     vx = uniqueTracks[ego_id].motionState[current_time]['vx']
     vy = uniqueTracks[ego_id].motionState[current_time]['vy']
     rv = 0.5 * ((vx ** 2 + vy ** 2) ** 0.5) / v_max
 
+    # position reward
+    x = uniqueTracks[ego_id].motionState[current_time]['x']
+    y = uniqueTracks[ego_id].motionState[current_time]['y']
+
+    x_closest = uniqueTracks[interactive_agents[0]].motionState[current_time]['x']
+    y_closest = uniqueTracks[interactive_agents[0]].motionState[current_time]['y']
+
+#     direction_ego = np.arctan(vy/vx)
+    distance_closest = np.sqrt((x_closest-x)**2 + (y_closest-y)**2) #b
+
+    x_next = x + vx*0.1
+    y_next = y + vy*0.1
+
+    distance_next = np.sqrt((x_next-x)**2 + (y_next-y)**2) #a
+    distance_next_closest = np.sqrt((x_next-x)**2 + (y_next-y)**2) #c
+
+    alpha = np.arccos((distance_next**2 + distance_closest**2 - distance_next_closest**2)/(2*distance_next*distance_closest))
+
+    rp = 0.5 * distance_closest * np.cos(alpha)**2
+
     # collision reward
     rc = -100 if check_collision(ego_id, interactive_agents, current_time, uniqueTracks) else 0
 
-    return rv + rc
+    return rv + rc + rp
 
 
 def reward(r_p, r_v, r_C, p, p_hat, v, v_hat, C):
