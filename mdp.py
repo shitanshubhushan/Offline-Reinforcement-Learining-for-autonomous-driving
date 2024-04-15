@@ -93,8 +93,13 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
     # repeat step 1. to get next state
     s_next = [ego_id] + interactive_agents_next + list(egoMotionState[next_time].values())[1:] + \
         get_next_pos_pred(next_egoMotionState['x'], next_egoMotionState['y'], next_egoMotionState['psi_rad'], next_egoMotionState['vx'], next_egoMotionState['vy'])
+    while len(interactive_agents_next) < 3:
+        interactive_agents_next.append(0)
     for agent_id in interactive_agents_next:
-        s_next += list(uniqueTracks[agent_id].motionState[next_time].values())
+        if agent_id != 0:
+            s += list(uniqueTracks[agent_id].motionState[next_time].values())
+        else:
+            s += [0, 0, 0, 0, 0, 0]
 
     ### the last episode
     # 1 the last time frame
