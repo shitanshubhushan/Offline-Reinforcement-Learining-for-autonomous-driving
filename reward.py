@@ -130,15 +130,19 @@ def get_reward(ego_id, interactive_agents, current_time, uniqueTracks, v_max):
     """
     reward function
     input:
-        ego_id
+        #ego_id
         interactive_agents
         current_time
-        uniqueTracks
+        #uniqueTracks
         v_max: maximum velocity over all dataset
 
     output:
         total reward
     """
+    # position reward
+    x = uniqueTracks[ego_id].motionState[current_time]['x']
+    y = uniqueTracks[ego_id].motionState[current_time]['y']
+    rp = 0.5
 
     # velocity reward 
     vx = uniqueTracks[ego_id].motionState[current_time]['vx']

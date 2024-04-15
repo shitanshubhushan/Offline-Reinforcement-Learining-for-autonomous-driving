@@ -80,7 +80,7 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
             s += [0, 0, 0, 0, 0, 0]
     
     ### 2. action -> velocity in the next timestep
-    a = [next_egoMotionState['vx'], next_egoMotionState['vy']]
+    a = [next_egoMotionState['vx'], next_egoMotionState['vy'], next_egoMotionState['psi_rad']]
 
     ### 3. reward
     # vx, vy = egoMotionState[current_time]['vx'], egoMotionState[current_time]['vy']
