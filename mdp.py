@@ -1,3 +1,6 @@
+import math
+import numpy as np
+import reward
 ##### Note: Markov Decision Process
 # S: the set of states
 # A: the set of actions
@@ -36,13 +39,7 @@ def get_other_agents_unique_id(unique_id, current_time, uniqueTracks):
     return other_agents_id_list, sorted_three_agetns
 
 
-def check_collision(agent_id, interactive_agents, current_time, uniqueTracks):
-    flag = False
-
-    return flag
-
-
-def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks):
+def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max):
     """
     get mdp tuple only if
     (1) interactive agents is not empty
@@ -59,11 +56,19 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks):
     # 0-3. edge cases
     if current_time == 4000:
         return None
+    next_time = current_time + 100
+    # get next interactive agents
+    _, interactive_agents_next = get_other_agents_unique_id(ego_id, next_time, uniqueTracks)
+    if not interactive_agents_next:
+        return None
 
     ### 1. state
     # ego vehicle id + interactive ids + ego info.
     egoMotionState = uniqueTracks[ego_id].motionState
-    s = [ego_id] + interactive_agents + list(egoMotionState[current_time].values())
+    curr_egoMotionState = uniqueTracks[ego_id].motionState[current_time]
+    next_egoMotionState = uniqueTracks[ego_id].motionState[next_time]
+    s = [ego_id] + interactive_agents + list(egoMotionState[current_time].values())[1:] + \
+        get_next_pos_pred(curr_egoMotionState['x'], curr_egoMotionState['y'], curr_egoMotionState['psi_rad'], curr_egoMotionState['vx'], curr_egoMotionState['vy'])
     # add interactive vehicles info.
 
     while len(interactive_agents) < 3:
@@ -75,19 +80,19 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks):
             s += [0, 0, 0, 0, 0, 0]
     
     ### 2. action -> velocity in the next timestep
-    next_time = current_time + 100
-    a = [egoMotionState[next_time]['vx'], egoMotionState[next_time]['vy']]
+    a = [next_egoMotionState['vx'], next_egoMotionState['vy']]
 
     ### 3. reward
-    r = 0
-    if check_collision(ego_id, interactive_agents, current_time, uniqueTracks):
-        r -= 100
+    # vx, vy = egoMotionState[current_time]['vx'], egoMotionState[current_time]['vy']
+    # r  = 0.5 * ((vx ** 2 + vy ** 2) ** 0.5) / v_max
+    # if collision.check_collision(ego_id, interactive_agents, current_time, uniqueTracks):
+    #    r -= 100
+    r = reward.get_reward(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
 
     ### 4. next state
-    # get next interactive agents
-    _, interactive_agents_next = get_other_agents_unique_id(ego_id, next_time, uniqueTracks)
     # repeat step 1. to get next state
-    s_next = [ego_id] + interactive_agents_next + list(egoMotionState[next_time].values())
+    s_next = [ego_id] + interactive_agents_next + list(egoMotionState[next_time].values())[1:] + \
+        get_next_pos_pred(next_egoMotionState['x'], next_egoMotionState['y'], next_egoMotionState['psi_rad'], next_egoMotionState['vx'], next_egoMotionState['vy'])
     for agent_id in interactive_agents_next:
         s_next += list(uniqueTracks[agent_id].motionState[next_time].values())
 
@@ -103,3 +108,14 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks):
         the_last_episode = True
     
     return (s, a, r, s_next, the_last_episode)
+
+def get_next_pos_pred(ego_x, ego_y, ego_heading, ego_vx, ego_vy):
+    vehicle_speed = (ego_vx ** 2 + ego_vy ** 2) ** 0.5
+    next_point_pos_x = ego_x + vehicle_speed * math.cos(ego_heading)
+    next_point_pos_y = ego_y + vehicle_speed * math.sin(ego_heading)
+    next_point_pos = (next_point_pos_x, next_point_pos_y)
+
+    #next_x_in_ego_axis = (next_point_pos[1] - ego_y)*np.cos(ego_heading) - (next_point_pos[0] - ego_x)*np.sin(ego_heading)
+    #next_y_in_ego_axis = (next_point_pos[1] - ego_y)*np.sin(ego_heading) + (next_point_pos[0] - ego_x)*np.cos(ego_heading)
+    #return [next_x_in_ego_axis, next_y_in_ego_axis]
+    return [next_point_pos_x, next_point_pos_y]
