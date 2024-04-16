@@ -82,17 +82,17 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
     ### 2. action -> velocity in the next timestep
     a = [next_egoMotionState['vx'], next_egoMotionState['vy'], next_egoMotionState['psi_rad']]
 
-    ### 3. reward
-    # vx, vy = egoMotionState[current_time]['vx'], egoMotionState[current_time]['vy']
-    # r  = 0.5 * ((vx ** 2 + vy ** 2) ** 0.5) / v_max
-    # if collision.check_collision(ego_id, interactive_agents, current_time, uniqueTracks):
-    #    r -= 100
-    
+    ### 3. reward    
     interactive_egoMotionStates = []
-    for i in range(len(interactive_agents)):
-        interactive_egoMotionStates.append(uniqueTracks[interactive_agents[i]].motionState[current_time])
+    print(ego_id, interactive_agents)
+    for agent_id in interactive_agents:
+        if agent_id != 0:
+            interactive_egoMotionStates.append(uniqueTracks[agent_id].motionState[current_time])
+        else:
+            interactive_egoMotionStates.append(None)
+            #print(current_time,'ck1')
     r = reward.get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max)
-
+    #print(current_time,'ck2')
     ### 4. next state
     # repeat step 1. to get next state
     s_next = [ego_id] + interactive_agents_next + list(egoMotionState[next_time].values())[1:] + \

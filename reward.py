@@ -147,24 +147,27 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max):
     x = curr_egoMotionState['x']
     y = curr_egoMotionState['y']
 
-    x_closest = interactive_egoMotionStates[0]['x']
-    y_closest = interactive_egoMotionStates[0]['y']
+    agent_closest = interactive_egoMotionStates[0]
+    if agent_closest:
+        x_closest = agent_closest['x']
+        y_closest = agent_closest['y']
 
-#     direction_ego = np.arctan(vy/vx)
-    distance_closest = np.sqrt((x_closest-x)**2 + (y_closest-y)**2) #b
+        distance_closest = np.sqrt((x_closest-x)**2 + (y_closest-y)**2) #b
 
-    x_next = x + vx*0.1
-    y_next = y + vy*0.1
+        x_next = x + vx*0.1
+        y_next = y + vy*0.1
 
-    distance_next = np.sqrt((x_next-x)**2 + (y_next-y)**2) #a
-    distance_next_closest = np.sqrt((x_next-x)**2 + (y_next-y)**2) #c
+        distance_next = np.sqrt((x_next-x)**2 + (y_next-y)**2) #a
+        distance_next_closest = np.sqrt((x_next-x)**2 + (y_next-y)**2) #c
 
-    alpha = np.arccos((distance_next**2 + distance_closest**2 - distance_next_closest**2)/(2*distance_next*distance_closest))
+        alpha = np.arccos((distance_next**2 + distance_closest**2 - distance_next_closest**2)/(2*distance_next*distance_closest))
 
-    angle_factor = 0
-    if alpha>-30 and alpha<30:
-        angle_factor = -1
-    rp = distance_closest * angle_factor
+        angle_factor = 0
+        if alpha>-30 and alpha<30:
+            angle_factor = -1
+        rp = distance_closest * angle_factor
+    else:
+        rp = 0
 
     # collision reward
     rc = -100 if check_collision(curr_egoMotionState, interactive_egoMotionStates) else 0
