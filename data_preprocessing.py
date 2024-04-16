@@ -15,7 +15,6 @@ class motionState:
         self.length = None
         self.width = None
         self.unique_id = None
-        self.agent_type = None
 
     def __str__(self):
         return "motionState: " + str(self.__dict__)

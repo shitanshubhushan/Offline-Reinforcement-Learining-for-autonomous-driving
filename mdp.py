@@ -67,20 +67,20 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
     egoMotionState = uniqueTracks[ego_id].motionState
     curr_egoMotionState = uniqueTracks[ego_id].motionState[current_time]
     next_egoMotionState = uniqueTracks[ego_id].motionState[next_time]
-    s = [ego_id] + interactive_agents + list(egoMotionState[current_time].values())[1:] + \
-        get_next_pos_pred(curr_egoMotionState['x'], curr_egoMotionState['y'], curr_egoMotionState['psi_rad'], curr_egoMotionState['vx'], curr_egoMotionState['vy'])
-    # add interactive vehicles info.
-
     while len(interactive_agents) < 3:
         interactive_agents.append(0)
+    s = [ego_id] + interactive_agents + list(egoMotionState[current_time].values())[1:8] + \
+        get_next_pos_pred(curr_egoMotionState['x'], curr_egoMotionState['y'], curr_egoMotionState['psi_rad'], curr_egoMotionState['vx'], curr_egoMotionState['vy'])
+    # add interactive vehicles info.
+    print(interactive_agents)
     for agent_id in interactive_agents:
         if agent_id != 0:
-            s += list(uniqueTracks[agent_id].motionState[current_time].values())
+            s += list(uniqueTracks[agent_id].motionState[current_time].values())[:8]
         else:
-            s += [0, 0, 0, 0, 0, 0]
+            s += [0, 0, 0, 0, 0, 0, 0, 0]
     
     ### 2. action -> velocity in the next timestep
-    a = [next_egoMotionState['vx'], next_egoMotionState['vy'], next_egoMotionState['psi_rad']]
+    a = [next_egoMotionState['vx'], next_egoMotionState['vy']]#, next_egoMotionState['psi_rad']]
 
     ### 3. reward    
     interactive_egoMotionStates = []
@@ -94,16 +94,16 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
     r = reward.get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max)
     #print(current_time,'ck2')
     ### 4. next state
-    # repeat step 1. to get next state
-    s_next = [ego_id] + interactive_agents_next + list(egoMotionState[next_time].values())[1:] + \
-        get_next_pos_pred(next_egoMotionState['x'], next_egoMotionState['y'], next_egoMotionState['psi_rad'], next_egoMotionState['vx'], next_egoMotionState['vy'])
     while len(interactive_agents_next) < 3:
         interactive_agents_next.append(0)
+    # repeat step 1. to get next state
+    s_next = [ego_id] + interactive_agents_next + list(egoMotionState[next_time].values())[1:8] + \
+        get_next_pos_pred(next_egoMotionState['x'], next_egoMotionState['y'], next_egoMotionState['psi_rad'], next_egoMotionState['vx'], next_egoMotionState['vy'])
     for agent_id in interactive_agents_next:
         if agent_id != 0:
-            s_next += list(uniqueTracks[agent_id].motionState[next_time].values())
+            s_next += list(uniqueTracks[agent_id].motionState[next_time].values())[:8]
         else:
-            s_next += [0, 0, 0, 0, 0, 0]
+            s_next += [0, 0, 0, 0, 0, 0, 0, 0]
 
     ### the last episode
     # 1 the last time frame
