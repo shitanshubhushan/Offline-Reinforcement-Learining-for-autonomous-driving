@@ -122,7 +122,7 @@ def car_collision(ego_x, ego_y, ego_length, ego_width, ego_psi, interactive_x, i
     return False
 
 
-def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max):
+def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_mean):
     """
     reward function
     input:
@@ -141,7 +141,12 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max):
     # velocity reward 
     vx = curr_egoMotionState['vx']
     vy = curr_egoMotionState['vy']
-    rv = 0.5 * ((vx ** 2 + vy ** 2) ** 0.5) / v_max
+    v = (vx ** 2 + vy ** 2) ** 0.5
+    sigma = 0.1
+    rv_offset = -1
+    rv_scale = 2
+    rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-v_mean)/sigma)**2)+rv_scale*rv_offset
+#     rv = 0.5 * v / v_max
 
     # position reward
     x = curr_egoMotionState['x']
