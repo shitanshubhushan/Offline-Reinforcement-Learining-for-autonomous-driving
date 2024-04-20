@@ -170,9 +170,11 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_mean):
         angle_factor = 0
         if alpha>-30 and alpha<30:
             angle_factor = -1
+            rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-(v_mean+0.5*distance_closest/0.1))/sigma)**2)+rv_scale*rv_offset
         rp = distance_closest * angle_factor
 
-        rv = rv*distance_closest #If there is a closest object, the greater the distance, the greater the reward for high velocity
+        # rv = rv*distance_closest #If there is a closest object, the greater the distance, the greater the reward for high velocity
+        # rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-(v_mean+distance_closest/0.1))/sigma)**2)+rv_scale*rv_offset
     else:
         rp = 0
 
