@@ -122,7 +122,7 @@ def car_collision(ego_x, ego_y, ego_length, ego_width, ego_psi, interactive_x, i
     return False
 
 
-def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max):
+def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v = 1, hyper_p = 1, hyper_c = -100):
     """
     reward function
     input:
@@ -145,7 +145,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max):
     sigma = 0.1
     rv_offset = -1
     rv_scale = 2
-    rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-v_max)/sigma)**2)+rv_scale*rv_offset
+    rv = hyper_v * (rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-v_max)/sigma)**2)+rv_scale*rv_offset)
 #     rv = 0.5 * v / v_max
 
     # position reward
@@ -172,7 +172,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max):
             angle_factor = -1
             new_mean = np.min((0.5*distance_closest/0.1),v_max) #Mean of new reward distribution is minimum of v_max and half the velocity to close distance between ego and object
             rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-new_mean)/sigma)**2)+rv_scale*rv_offset
-        rp = distance_closest * angle_factor
+        rp = hyper_p * distance_closest * angle_factor
 
         # rv = rv*distance_closest #If there is a closest object, the greater the distance, the greater the reward for high velocity
         # rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-(v_mean+distance_closest/0.1))/sigma)**2)+rv_scale*rv_offset
@@ -180,7 +180,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max):
         rp = 0
 
     # collision reward
-    rc = -100 if check_collision(curr_egoMotionState, interactive_egoMotionStates) else 0
+    rc = hyper_c if check_collision(curr_egoMotionState, interactive_egoMotionStates) else 0
 
     return rv + rc + rp
 
