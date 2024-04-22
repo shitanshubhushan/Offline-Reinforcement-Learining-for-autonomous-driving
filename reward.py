@@ -145,7 +145,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
     sigma = 0.1
     rv_offset = -1
     rv_scale = 2
-    rv = hyper_v * (rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-v_max)/sigma)**2)+rv_scale*rv_offset)
+#     rv = hyper_v * (rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-v_max)/sigma)**2)+rv_scale*rv_offset)
 #     rv = 0.5 * v / v_max
 
     # position reward
@@ -170,8 +170,12 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
         angle_factor = 0
         if alpha>-30 and alpha<30:
             angle_factor = -1
-            new_mean = np.min((0.5*distance_closest/0.1),v_max) #Mean of new reward distribution is minimum of v_max and half the velocity to close distance between ego and object
-            rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-new_mean)/sigma)**2)+rv_scale*rv_offset
+            mean = np.min((0.5*distance_closest/0.1),v_max) #Mean of new reward distribution is minimum of v_max and half the velocity to close distance between ego and object
+        #     rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-mean)/sigma)**2)+rv_scale*rv_offset
+        else:
+            mean = v_max
+            
+        rv = hyper_v * (rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-mean)/sigma)**2)+rv_scale*rv_offset)
         rp = hyper_p * distance_closest * angle_factor
 
         # rv = rv*distance_closest #If there is a closest object, the greater the distance, the greater the reward for high velocity
