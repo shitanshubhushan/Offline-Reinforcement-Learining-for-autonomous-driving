@@ -1,4 +1,4 @@
-from cmath import sqrt
+import cmath 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -175,7 +175,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
         else:
             mean = v_max
             
-        rv = hyper_v * (rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-mean)/sigma)**2)+rv_scale*rv_offset)
+        rv = hyper_v * (rv_scale/(sigma*np.sqrt(2*np.pi))*np.exp(-0.5*((v-mean)/sigma)**2)+rv_scale*rv_offset)
         rp = hyper_p * distance_closest * angle_factor
 
         # rv = rv*distance_closest #If there is a closest object, the greater the distance, the greater the reward for high velocity
@@ -185,8 +185,15 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
 
     # collision reward
     rc = hyper_c if check_collision(curr_egoMotionState, interactive_egoMotionStates) else 0
+    # if rv is a real number np.abs(rv) = abs(rv) rv < 0
+    if rv is isinstance(rv, complex):
+        rv = rv.real
+    if rp is isinstance(rp, complex):
+        rp = rp.real
+    if rc is isinstance(rc, complex):
+        rc = rc.real
+    return rc
 
-    return rv + rc + rp
 
 
 def reward(r_p, r_v, r_C, p, p_hat, v, v_hat, C):
