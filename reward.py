@@ -192,7 +192,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
         rp = rp.real
     if rc is isinstance(rc, complex):
         rc = rc.real
-    return rc
+    return rc + rv + rp
 
 
 
