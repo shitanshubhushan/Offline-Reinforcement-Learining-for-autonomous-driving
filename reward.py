@@ -142,7 +142,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
     vx = curr_egoMotionState['vx']
     vy = curr_egoMotionState['vy']
     v = (vx ** 2 + vy ** 2) ** 0.5
-    sigma = 0.1
+    sigma = v_max*0.25
     rv_offset = -1
     rv_scale = 2
 #     rv = hyper_v * (rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-v_max)/sigma)**2)+rv_scale*rv_offset)
@@ -168,7 +168,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
         mean = v_max
         if distance_next and distance_next_closest:
             alpha = np.arccos((distance_next**2 + distance_closest**2 - distance_next_closest**2)/(2*distance_next*distance_closest))
-            if alpha >- 30 and alpha < 30:
+            if alpha > -30*np.pi/180 and alpha < 30*np.pi/180:
                         angle_factor = -1
                         mean = min((0.5*distance_closest/0.1),v_max) #Mean of new reward distribution is minimum of v_max and half the velocity to close distance between ego and object
                     #     rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-mean)/sigma)**2)+rv_scale*rv_offset  
