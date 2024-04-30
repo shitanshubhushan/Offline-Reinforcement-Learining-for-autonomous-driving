@@ -72,7 +72,7 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
     s = [ego_id] + interactive_agents + list(egoMotionState[current_time].values())[1:8] + \
         get_next_pos_pred(curr_egoMotionState['x'], curr_egoMotionState['y'], curr_egoMotionState['psi_rad'], curr_egoMotionState['vx'], curr_egoMotionState['vy'])
     # add interactive vehicles info.
-    print(interactive_agents)
+    #print(interactive_agents)
     for agent_id in interactive_agents:
         if agent_id != 0:
             s += list(uniqueTracks[agent_id].motionState[current_time].values())[:8]
@@ -84,7 +84,7 @@ def get_mdp_tuple(ego_id, interactive_agents, current_time, uniqueTracks, v_max)
 
     ### 3. reward    
     interactive_egoMotionStates = []
-    print(ego_id, interactive_agents)
+    #print(ego_id, interactive_agents)
     for agent_id in interactive_agents:
         if agent_id != 0:
             interactive_egoMotionStates.append(uniqueTracks[agent_id].motionState[current_time])

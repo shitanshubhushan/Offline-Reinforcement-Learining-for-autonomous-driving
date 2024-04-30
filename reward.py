@@ -121,7 +121,21 @@ def car_collision(ego_x, ego_y, ego_length, ego_width, ego_psi, interactive_x, i
         return True
     return False
 
+def get_reward1(curr_egoMotionState, interactive_egoMotionStates, v_max):
+    vx = curr_egoMotionState['vx']
+    vy = curr_egoMotionState['vy']
+    v_t = np.sqrt(vx**2 + vy**2)  # Current speed of the ego vehicle
+    rv = 0.5 * v_t / v_max
 
+    # Collision penalty
+    rc = -100 if check_collision(curr_egoMotionState, interactive_egoMotionStates) else 0
+
+    # Total reward
+    total_reward = rv + rc
+
+    print(f"rc = {rc}, rc = {rv}")
+
+    return total_reward
 def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v = 1, hyper_p = 1, hyper_c = -100):
     """
     reward function
@@ -142,7 +156,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
     vx = curr_egoMotionState['vx']
     vy = curr_egoMotionState['vy']
     v = (vx ** 2 + vy ** 2) ** 0.5
-    sigma = 0.1
+    sigma = v_max*0.25
     rv_offset = -1
     rv_scale = 2
 #     rv = hyper_v * (rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-v_max)/sigma)**2)+rv_scale*rv_offset)
@@ -168,7 +182,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
         mean = v_max
         if distance_next and distance_next_closest:
             alpha = np.arccos((distance_next**2 + distance_closest**2 - distance_next_closest**2)/(2*distance_next*distance_closest))
-            if alpha >- 30 and alpha < 30:
+            if alpha > -30*np.pi/180 and alpha < 30*np.pi/180:
                         angle_factor = -1
                         mean = min((0.5*distance_closest/0.1),v_max) #Mean of new reward distribution is minimum of v_max and half the velocity to close distance between ego and object
                     #     rv = rv_scale/(sigma*sqrt(2*np.pi))*np.exp(-0.5*((v-mean)/sigma)**2)+rv_scale*rv_offset  
@@ -180,7 +194,11 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
     else:
         rp = 0
 
-    # collision reward
+    rv = 0.5 * v / v_max
+
+    # Collision penalty
+    rc = -100 if check_collision(curr_egoMotionState, interactive_egoMotionStates) else 0
+
     rc = hyper_c if check_collision(curr_egoMotionState, interactive_egoMotionStates) else 0
     # if rv is a real number np.abs(rv) = abs(rv) rv < 0
     if rv is isinstance(rv, complex):
@@ -189,6 +207,7 @@ def get_reward(curr_egoMotionState, interactive_egoMotionStates, v_max, hyper_v 
         rp = rp.real
     if rc is isinstance(rc, complex):
         rc = rc.real
+    print(f"rv = {rv}, rc = {rc}, rp = {rp}")
     return rv
 
 
